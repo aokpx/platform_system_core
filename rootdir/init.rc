@@ -361,6 +361,13 @@ on boot
     class_start core
     class_start main
 
+    setprop ro.test_harness true
+# See http://www.netmite.com/android/mydroid/2.0/dalvik/docs/embedded-vm-control.html
+# Disable verification, should speed things up
+    setprop dalvik.vm.dexopt-flags m=y,v=n
+# Disable extended JNI checks, should speed things up
+    setprop dalvik.vm.checkjni false
+
 on nonencrypted
     class_start late_start
 
