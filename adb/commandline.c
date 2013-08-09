@@ -144,12 +144,15 @@ void help()
         "  adb bugreport                - return all information from the device\n"
         "                                 that should be included in a bug report.\n"
         "\n"
-        "  adb backup [-f <file>] [-apk|-noapk] [-shared|-noshared] [-all] [-system|-nosystem] [<packages...>]\n"
+        "  adb backup [-f <file>] [-apk|-noapk] [-obb|-noobb] [-shared|-noshared] [-all] [-system|-nosystem] [<packages...>]\n"
         "                               - write an archive of the device's data to <file>.\n"
         "                                 If no -f option is supplied then the data is written\n"
         "                                 to \"backup.ab\" in the current directory.\n"
         "                                 (-apk|-noapk enable/disable backup of the .apks themselves\n"
         "                                    in the archive; the default is noapk.)\n"
+        "                                 (-obb|-noobb enable/disable backup of any installed apk expansion\n"
+        "                                    (aka .obb) files associated with each application; the default\n"
+        "                                    is noobb.)\n"
         "                                 (-shared|-noshared enable/disable backup of the device's\n"
         "                                    shared storage / SD card contents; the default is noshared.)\n"
         "                                 (-all means to back up all installed applications)\n"
@@ -383,7 +386,7 @@ static void format_host_command(char* buffer, size_t  buflen, const char* comman
     }
 }
 
-int adb_download_buffer(const char *service, const void* data, int sz,
+int adb_download_buffer(const char *service, const char *fn, const void* data, int sz,
                         unsigned progress)
 {
     char buf[4096];
@@ -419,7 +422,7 @@ int adb_download_buffer(const char *service, const void* data, int sz,
         sz -= xfer;
         ptr += xfer;
         if(progress) {
-            printf("sending: '%s' %4d%%    \r", service, (int)(100LL - ((100LL * sz) / (total))));
+            printf("sending: '%s' %4d%%    \r", fn, (int)(100LL - ((100LL * sz) / (total))));
             fflush(stdout);
         }
     }
@@ -451,11 +454,11 @@ int adb_download(const char *service, const char *fn, unsigned progress)
 
     data = load_file(fn, &sz);
     if(data == 0) {
-        fprintf(stderr,"* cannot read '%s' *\n", service);
+        fprintf(stderr,"* cannot read '%s' *\n", fn);
         return -1;
     }
 
-    int status = adb_download_buffer(service, data, sz, progress);
+    int status = adb_download_buffer(service, fn, data, sz, progress);
     free(data);
     return status;
 }
